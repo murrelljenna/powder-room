@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://bkcnqevnhctq0"]
+
+[ext_resource type="Script" path="res://FPSController/character_body_3d.gd" id="1_jcu1t"]
+[ext_resource type="PackedScene" uid="uid://gvm0me264r32" path="res://models/disguise-glasses.glb" id="1_voykq"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qx8tb"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_sn8yd"]
+
+[node name="CharacterBody3D" type="CharacterBody3D"]
+script = ExtResource("1_jcu1t")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_qx8tb")
+
+[node name="WorldModel" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WorldModel"]
+mesh = SubResource("CapsuleMesh_sn8yd")
+
+[node name="disguise-glasses" parent="WorldModel" instance=ExtResource("1_voykq")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0.430632, -0.319393)
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.742242, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head"]

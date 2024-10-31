@@ -8,6 +8,9 @@ extends CharacterBody3D
 
 var wish_dir := Vector3.ZERO
 
+func get_move_speed() -> float:
+	return sprint_speed if Input.is_action_pressed("sprint") else walk_speed
+
 func _ready():
 	for child in get_node("WorldModel").find_children("*", "VisualInstance3D"):
 		child.set_layer_mask_value(1, false)
@@ -28,6 +31,8 @@ func _physics_process(delta):
 	var input_dir = Input.get_vector("left", "right", "up", "down").normalized()
 	wish_dir = self.global_transform.basis * Vector3(-input_dir.x, 0., -input_dir.y)
 	if is_on_floor():
+		if Input.is_action_just_pressed("jump"):
+			self.velocity.y = jump_velocity
 		_handle_ground_physics(delta)
 	else:
 		_handle_air_physics(delta)
@@ -35,8 +40,8 @@ func _physics_process(delta):
 	move_and_slide()
 	
 func _handle_ground_physics(delta) -> void:
-	self.velocity.x = wish_dir.x * walk_speed
-	self.velocity.z = wish_dir.z * walk_speed
+	self.velocity.x = wish_dir.x * get_move_speed()
+	self.velocity.z = wish_dir.z * get_move_speed()
 	
 func _handle_air_physics(delta) -> void:
 	self.velocity.y -= ProjectSettings.get_setting("physics/3d/default_gravity") * delta

@@ -1,6 +1,12 @@
 extends CharacterBody3D
 
 @export var look_sensitivity : float = 0.006
+@export var jump_velocity := 6.0
+@export var auto_bhop := true
+@export var walk_speed := 7.0
+@export var sprint_speed := 8.5
+
+var wish_dir := Vector3.ZERO
 
 func _ready():
 	for child in get_node("WorldModel").find_children("*", "VisualInstance3D"):
@@ -16,10 +22,24 @@ func _unhandled_input(event):
 	if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		if event is InputEventMouseMotion:
 			rotate_y(-event.relative.x * look_sensitivity)
-			get_node("Head").rotate_x(-event.relative.y * look_sensitivity)
+			get_node("Head").rotate_x(event.relative.y * look_sensitivity)
 			get_node("Head").rotation.x = clamp(get_node("Head").rotation.x, deg_to_rad(-90), deg_to_rad(90))
 func _physics_process(delta):
-	pass
+	var input_dir = Input.get_vector("left", "right", "up", "down").normalized()
+	wish_dir = self.global_transform.basis * Vector3(-input_dir.x, 0., -input_dir.y)
+	if is_on_floor():
+		_handle_ground_physics(delta)
+	else:
+		_handle_air_physics(delta)
+		
+	move_and_slide()
+	
+func _handle_ground_physics(delta) -> void:
+	self.velocity.x = wish_dir.x * walk_speed
+	self.velocity.z = wish_dir.z * walk_speed
+	
+func _handle_air_physics(delta) -> void:
+	self.velocity.y -= ProjectSettings.get_setting("physics/3d/default_gravity") * delta
 	
 func _process(delta):
 	pass

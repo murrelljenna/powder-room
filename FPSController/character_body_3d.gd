@@ -6,6 +6,10 @@ extends CharacterBody3D
 @export var walk_speed := 7.0
 @export var sprint_speed := 8.5
 
+@export var air_cap := 0.85
+@export var air_accel := 800.0
+@export var air_move_speed := 500.0
+
 var wish_dir := Vector3.ZERO
 
 func get_move_speed() -> float:
@@ -45,6 +49,13 @@ func _handle_ground_physics(delta) -> void:
 	
 func _handle_air_physics(delta) -> void:
 	self.velocity.y -= ProjectSettings.get_setting("physics/3d/default_gravity") * delta
+	var cur_speed_in_wish_dir = self.velocity.dot(wish_dir)
+	var capped_speed = min((air_move_speed * wish_dir).length(), air_cap)
+	var add_speed_till_cap = capped_speed - cur_speed_in_wish_dir
+	if add_speed_till_cap > 0:
+		var accel_speed = air_accel * air_move_speed * delta
+		accel_speed = min(accel_speed, add_speed_till_cap)
+		self.velocity += accel_speed * wish_dir
 	
 func _process(delta):
 	pass

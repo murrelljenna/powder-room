@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://bkcnqevnhctq0"]
+[gd_scene load_steps=6 format=3 uid="uid://bkcnqevnhctq0"]
 
 [ext_resource type="Script" path="res://FPSController/character_body_3d.gd" id="1_jcu1t"]
 [ext_resource type="PackedScene" uid="uid://gvm0me264r32" path="res://models/disguise-glasses.glb" id="1_voykq"]
+[ext_resource type="PackedScene" uid="uid://c6p8hyjp6algt" path="res://spray_gun.tscn" id="3_y8vdj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qx8tb"]
 
@@ -26,3 +27,5 @@ transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0.7
 
 [node name="Camera3D" type="Camera3D" parent="Head"]
 cull_mask = 1048573
+
+[node name="spray_gun" parent="Head" instance=ExtResource("3_y8vdj")]

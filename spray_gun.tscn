@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c6p8hyjp6algt"]
+
+[ext_resource type="Script" path="res://spray_gun.gd" id="1_857qj"]
+
+[node name="spray_gun" type="Node3D"]
+script = ExtResource("1_857qj")

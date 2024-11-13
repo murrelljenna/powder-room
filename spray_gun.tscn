@@ -1,6 +1,21 @@
-[gd_scene load_steps=2 format=3 uid="uid://c6p8hyjp6algt"]
+[gd_scene load_steps=5 format=3 uid="uid://c6p8hyjp6algt"]
 
 [ext_resource type="Script" path="res://spray_gun.gd" id="1_857qj"]
 
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3knrh"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_oblls"]
+size = Vector2(1, 0.1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_k16al"]
+
 [node name="spray_gun" type="Node3D"]
 script = ExtResource("1_857qj")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+local_coords = true
+process_material = SubResource("ParticleProcessMaterial_3knrh")
+draw_pass_1 = SubResource("QuadMesh_oblls")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_k16al")

@@ -2,10 +2,18 @@
 
 [ext_resource type="Script" path="res://spray_gun.gd" id="1_857qj"]
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3knrh"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_wb5rg"]
+velocity_pivot = Vector3(1, 1, 1)
+direction = Vector3(0, 0, 0)
+spread = 8.133
+flatness = 0.301
+initial_velocity_min = 7.0
+initial_velocity_max = 8.0
+gravity = Vector3(0, -2, 0)
 
-[sub_resource type="QuadMesh" id="QuadMesh_oblls"]
-size = Vector2(1, 0.1)
+[sub_resource type="SphereMesh" id="SphereMesh_tqble"]
+radius = 0.1
+height = 0.25
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_k16al"]
 
@@ -13,9 +21,11 @@ size = Vector2(1, 0.1)
 script = ExtResource("1_857qj")
 
 [node name="GPUParticles3D" type="GPUParticles3D" parent="."]
-local_coords = true
-process_material = SubResource("ParticleProcessMaterial_3knrh")
-draw_pass_1 = SubResource("QuadMesh_oblls")
+lifetime = 2.43
+explosiveness = 0.02
+process_material = SubResource("ParticleProcessMaterial_wb5rg")
+draw_pass_1 = SubResource("SphereMesh_tqble")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, -6.55671e-09, 0.15, 0, -0.15, -6.55671e-09, 0, 0, 0)
 mesh = SubResource("CapsuleMesh_k16al")

@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://spray_gun.gd" id="1_857qj"]
 [ext_resource type="Texture2D" uid="uid://h0303xhmnv5l" path="res://particle_sprite_smoke.webp" id="2_bwufc"]
 
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_k16al"]
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hrtj7"]
 transparency = 1
 blend_mode = 1
@@ -38,12 +40,17 @@ anim_speed_max = 1.2
 [sub_resource type="QuadMesh" id="QuadMesh_a4wed"]
 size = Vector2(1.5, 1.5)
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_k16al"]
-
 [node name="spray_gun" type="Node3D"]
 script = ExtResource("1_857qj")
 
-[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.15, 0, 0, 0, -6.55671e-09, 0.15, 0, -0.15, -6.55671e-09, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_k16al")
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.212919, 0.508087)
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="Node3D"]
 material_override = SubResource("StandardMaterial3D_hrtj7")
 amount = 20
 lifetime = 1.03
@@ -52,7 +59,3 @@ randomness = 0.03
 trail_lifetime = 0.01
 process_material = SubResource("ParticleProcessMaterial_wb5rg")
 draw_pass_1 = SubResource("QuadMesh_a4wed")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.15, 0, 0, 0, -6.55671e-09, 0.15, 0, -0.15, -6.55671e-09, 0, 0, 0)
-mesh = SubResource("CapsuleMesh_k16al")

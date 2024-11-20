@@ -42,8 +42,9 @@ anim_speed_max = 1.2
 
 [sub_resource type="QuadMesh" id="QuadMesh_a4wed"]
 
-[node name="spray_gun" type="Node3D"]
+[node name="spray_gun" type="Node3D" node_paths=PackedStringArray("particles_node")]
 script = ExtResource("1_857qj")
+particles_node = NodePath("Node3D/GPUParticles3D")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.15, 0, 0, 0, -6.55671e-09, 0.15, 0, -0.15, -6.55671e-09, 0, 0, 0)

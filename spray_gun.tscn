@@ -9,21 +9,34 @@ blend_mode = 1
 shading_mode = 0
 vertex_color_use_as_albedo = true
 albedo_texture = ExtResource("2_bwufc")
+uv1_triplanar_sharpness = 0.0583146
+uv2_triplanar_sharpness = 0.0192366
 billboard_mode = 3
 particles_anim_h_frames = 8
 particles_anim_v_frames = 8
 particles_anim_loop = true
+grow = true
+grow_amount = 1.018
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_wb5rg"]
+angle_min = -26.8
+angle_max = 114.4
 velocity_pivot = Vector3(1, 1, 1)
 direction = Vector3(0, 0, 0)
-spread = 8.133
-flatness = 0.301
-initial_velocity_min = 7.0
-initial_velocity_max = 8.0
-gravity = Vector3(0, -2, 0)
+spread = 11.498
+flatness = 0.034
+initial_velocity_min = 3.0
+initial_velocity_max = 6.0
+angular_velocity_min = 20.19
+angular_velocity_max = 235.51
+gravity = Vector3(0, -1, 0)
+scale_min = 267.36
+scale_max = 267.36
+anim_speed_min = 1.2
+anim_speed_max = 1.2
 
 [sub_resource type="QuadMesh" id="QuadMesh_a4wed"]
+size = Vector2(1.5, 1.5)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_k16al"]
 
@@ -32,8 +45,11 @@ script = ExtResource("1_857qj")
 
 [node name="GPUParticles3D" type="GPUParticles3D" parent="."]
 material_override = SubResource("StandardMaterial3D_hrtj7")
-lifetime = 2.43
-explosiveness = 0.02
+amount = 20
+lifetime = 1.03
+explosiveness = 0.05
+randomness = 0.03
+trail_lifetime = 0.01
 process_material = SubResource("ParticleProcessMaterial_wb5rg")
 draw_pass_1 = SubResource("QuadMesh_a4wed")
 

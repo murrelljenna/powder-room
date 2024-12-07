@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace powdered_networking
 {
@@ -10,28 +11,28 @@ namespace powdered_networking
 	{
 		private const int Port = 5000;
 
-		public static void StartServer()
+		public static async Task StartServerAsync()
 		{
 			Console.WriteLine("Hi there");
-			// Create a TCP/IP socket
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
 
 			try
 			{
-				// Start listening for client requests
 				server.Start();
 				Console.WriteLine($"Server started on port {Port}. Waiting for a connection...");
 
 				while (true)
 				{
-					// Accept a pending connection
-					TcpClient client = server.AcceptTcpClient();
+					// Await the acceptance of a client without blocking the main thread
+					TcpClient client = await server.AcceptTcpClientAsync();
 					Console.WriteLine("Client connected!");
 
 					// Get a stream object for reading data
 					NetworkStream stream = client.GetStream();
 					byte[] buffer = new byte[1024];
-					int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                    
+					// Read data asynchronously
+					int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
 
 					// Convert bytes to string and print
 					string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
@@ -47,7 +48,6 @@ namespace powdered_networking
 			}
 			finally
 			{
-				// Stop the server
 				server.Stop();
 			}
 		}

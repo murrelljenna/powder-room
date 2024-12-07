@@ -9,11 +9,18 @@ public partial class NetworkRunner : Node
 	{
 		// Start the server in the background
 		StartServerAsync();
+		ConnectClientAsync();
 	}
 
 	private async void StartServerAsync()
 	{
 		// Run the server in the background without blocking the main thread
 		await Task.Run(() => Server.StartServerAsync());
+	}
+	
+	private async void ConnectClientAsync()
+	{
+		// Run the client connection and message sending in the background
+		await Task.Run(() => SocketClient.ConnectAndSendMessageAsync());
 	}
 }

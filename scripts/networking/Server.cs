@@ -4,49 +4,52 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-public class Server
+namespace powdered_networking
 {
-	private const int Port = 5000;
-
-	public static void StartServer()
+	public class Server
 	{
-		Console.WriteLine("Hi there");
-		// Create a TCP/IP socket
-		TcpListener server = new TcpListener(IPAddress.Any, Port);
+		private const int Port = 5000;
 
-		try
+		public static void StartServer()
 		{
-			// Start listening for client requests
-			server.Start();
-			Console.WriteLine($"Server started on port {Port}. Waiting for a connection...");
+			Console.WriteLine("Hi there");
+			// Create a TCP/IP socket
+			TcpListener server = new TcpListener(IPAddress.Any, Port);
 
-			while (true)
+			try
 			{
-				// Accept a pending connection
-				TcpClient client = server.AcceptTcpClient();
-				Console.WriteLine("Client connected!");
+				// Start listening for client requests
+				server.Start();
+				Console.WriteLine($"Server started on port {Port}. Waiting for a connection...");
 
-				// Get a stream object for reading data
-				NetworkStream stream = client.GetStream();
-				byte[] buffer = new byte[1024];
-				int bytesRead = stream.Read(buffer, 0, buffer.Length);
+				while (true)
+				{
+					// Accept a pending connection
+					TcpClient client = server.AcceptTcpClient();
+					Console.WriteLine("Client connected!");
 
-				// Convert bytes to string and print
-				string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-				Console.WriteLine($"Received: {message}");
+					// Get a stream object for reading data
+					NetworkStream stream = client.GetStream();
+					byte[] buffer = new byte[1024];
+					int bytesRead = stream.Read(buffer, 0, buffer.Length);
 
-				// Close the client connection
-				client.Close();
+					// Convert bytes to string and print
+					string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+					Console.WriteLine($"Received: {message}");
+
+					// Close the client connection
+					client.Close();
+				}
 			}
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"Error: {ex.Message}");
-		}
-		finally
-		{
-			// Stop the server
-			server.Stop();
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error: {ex.Message}");
+			}
+			finally
+			{
+				// Stop the server
+				server.Stop();
+			}
 		}
 	}
 }

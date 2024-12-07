@@ -1,12 +1,14 @@
-[gd_scene load_steps=41 format=3 uid="uid://bhbueky3csxi"]
+[gd_scene load_steps=43 format=3 uid="uid://bhbueky3csxi"]
 
 [ext_resource type="Material" uid="uid://bk7nbd8td4gb1" path="res://textures/grey_checkerboard_mat.tres" id="1_1bstl"]
+[ext_resource type="Script" path="res://NetworkRunner.cs" id="1_qo17g"]
 [ext_resource type="Texture2D" uid="uid://d1uelfks0ip1w" path="res://textures/grid_image.png" id="2_uym2f"]
 [ext_resource type="PackedScene" uid="uid://bak8ltrhbmlv5" path="res://utils/CSGStairMaker3D.tscn" id="3_2shvn"]
 [ext_resource type="ArrayMesh" uid="uid://dry23jeo6prdo" path="res://models/terrain_mesh.mesh" id="4_t8olv"]
 [ext_resource type="Texture2D" uid="uid://c7yth5opetwes" path="res://textures/kenney-dark-grey-checkerboard.png" id="5_pnti6"]
 [ext_resource type="Texture2D" uid="uid://b28c62e3f23vb" path="res://textures/kenney-orange-checkerboard-cc0.png" id="6_s6lf8"]
 [ext_resource type="PackedScene" uid="uid://bkcnqevnhctq0" path="res://FPSController/character_body_3d.tscn" id="7_y8tag"]
+[ext_resource type="Script" path="res://Node3d.cs" id="9_u8tiv"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bwjpn"]
 
@@ -493,3 +495,9 @@ path_joined = false
 
 [node name="CharacterBody3D" parent="." instance=ExtResource("7_y8tag")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.97419, 1.06973, -46.6579)
+
+[node name="NetworkRunner" type="Node" parent="."]
+script = ExtResource("1_qo17g")
+
+[node name="Node3D" type="Node3D" parent="NetworkRunner"]
+script = ExtResource("9_u8tiv")

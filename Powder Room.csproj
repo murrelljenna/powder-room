@@ -11,6 +11,9 @@
         <HintPath>libs/powdered_networking.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="3.0.308" />
+  </ItemGroup>
   <Target Name="CopyLocalReferences" AfterTargets="Build">
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(OutDir)" />
   </Target>

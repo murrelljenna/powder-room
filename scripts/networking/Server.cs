@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using MessagePack;
 
 namespace powdered_networking
 {
@@ -30,13 +31,14 @@ namespace powdered_networking
 					// Get a stream object for reading data
 					NetworkStream stream = client.GetStream();
 					byte[] buffer = new byte[1024];
-                    
+                    Console.WriteLine(buffer.Length);
 					// Read data asynchronously
+					
 					int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-
-					// Convert bytes to string and print
-					string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-					Console.WriteLine($"Received: {message}");
+					
+					NetworkObject netObj = MessagePackSerializer.Deserialize<NetworkObject>(buffer);
+					
+					Console.WriteLine($"Received: {netObj.Id}");
 
 					// Close the client connection
 					client.Close();

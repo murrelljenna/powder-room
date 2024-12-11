@@ -27,8 +27,9 @@ namespace powdered_networking
                     NetworkStream stream = client.GetStream();
                     string message = "hello world";
 
+                    INetworkMessage input = new NetworkInput();
                     // Convert string to bytes and send asynchronously
-                    byte[] data = MessagePackSerializer.Serialize(netObj);
+                    byte[] data = MessagePackSerializer.Serialize(input);
                     await stream.WriteAsync(data, 0, data.Length);
                     Console.WriteLine($"Sent: {netObj.Id}");
 

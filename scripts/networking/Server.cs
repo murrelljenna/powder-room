@@ -36,9 +36,18 @@ namespace powdered_networking
 					
 					int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
 					
-					NetworkObject netObj = MessagePackSerializer.Deserialize<NetworkObject>(buffer);
-					
-					Console.WriteLine($"Received: {netObj.Id}");
+					INetworkMessage netObj = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
+					Console.WriteLine("Deserializing message");
+					switch (netObj)
+					{
+						case NetworkInput input: 
+							Console.WriteLine("Input received!");
+							break;
+						
+						case NetworkEvent networkEvent: 
+							Console.WriteLine("Event received!");
+							break;
+					}
 
 					// Close the client connection
 					client.Close();

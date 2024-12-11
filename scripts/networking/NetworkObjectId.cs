@@ -7,10 +7,10 @@ public class NetworkState : NetworkMessage
     public NetworkObject[] objects;
 }*/
 [MessagePackObject]
-public class NetworkInput : INetworkMessage
+public struct NetworkInput : INetworkMessage
 {
     [Key(0)]
-    public bool forward {get; set;}
+    public bool Forward {get; set;}
 }
 [MessagePackObject]
 public class NetworkEvent : INetworkMessage

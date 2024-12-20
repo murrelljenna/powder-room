@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Godot;
 using powdered_networking;
@@ -14,7 +16,7 @@ public abstract partial class GodotSocketClient : Node
         StartSocketClient();
     }
 
-    public void _Process(float delta)
+    public override void _Process(double delta)
     {
         QueueInput();
     }
@@ -29,8 +31,9 @@ public abstract partial class GodotSocketClient : Node
     
     private async void StartSocketClient()
     {
+        CancellationTokenSource cts = new CancellationTokenSource();
         // Run the client connection and message sending in the background
-        await Task.Run(() => SocketClient.ConnectAndSendMessageAsync(_inputQueue));
+        await Task.Run(() => SocketClient.ConnectAndSendMessageAsync(_inputQueue, cts.Token));
     }
     private async void StartServerAsync()
     {

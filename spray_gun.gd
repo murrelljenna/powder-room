@@ -7,7 +7,6 @@ var firing := false
 func _fire() -> void:
 	firing = true
 	particles_node.emitting = true
-	print("fire")
 
 func _stop_firing() -> void:
 	firing = false

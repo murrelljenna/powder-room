@@ -1,26 +1,25 @@
 using Godot;
 using System;
 using System.Threading.Tasks;
+using MessagePack;
 using powdered_networking;
 
-public partial class NetworkRunner : Node
+public partial class NetworkRunner : GodotSocketClient
 {
-	public override void _Ready()
+	public override NetworkInput PollInput()
 	{
-		// Start the server in the background
-		StartServerAsync();
-		ConnectClientAsync();
-	}
+		NetworkInput input = new NetworkInput();
+		
+		if (Input.IsActionPressed("ui_up"))
+		{
+			
+		}
 
-	private async void StartServerAsync()
-	{
-		// Run the server in the background without blocking the main thread
-		await Task.Run(() => Server.StartServerAsync());
-	}
-	
-	private async void ConnectClientAsync()
-	{
-		// Run the client connection and message sending in the background
-		await Task.Run(() => SocketClient.ConnectAndSendMessageAsync());
+		if (Input.IsActionPressed("sprint"))
+		{
+			//input.Sprint = true;
+		}
+
+		return input;
 	}
 }

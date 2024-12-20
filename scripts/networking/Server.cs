@@ -36,7 +36,7 @@ namespace powdered_networking
 					// Read data asynchronously
 					
 					int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-					
+
 					INetworkMessage netObj = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
 					Console.WriteLine("Deserializing message");
 					switch (netObj)

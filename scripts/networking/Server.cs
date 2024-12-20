@@ -43,6 +43,7 @@ namespace powdered_networking
 					{
 						case NetworkInput input: 
 							Console.WriteLine("Input received!");
+							Console.WriteLine(input.Sprint);
 							break;
 						
 						case NetworkEvent networkEvent: 

@@ -17,7 +17,7 @@ public partial class NetworkRunner : GodotSocketClient
 
 		if (Input.IsActionPressed("sprint"))
 		{
-			//input.Sprint = true;
+			input.Sprint = true;
 		}
 
 		return input;

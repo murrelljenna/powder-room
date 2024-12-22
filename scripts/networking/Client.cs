@@ -13,7 +13,7 @@ namespace powdered_networking
     {
         private const string ServerIp = "127.0.0.1"; // Localhost
         private const int Port = 5000;
-        
+        private const string PlayerName = "Player";
 
         public static async Task ConnectAndSendMessageAsync(ConcurrentQueue<NetworkInput> messageQueue, CancellationToken cancel)
         { 
@@ -28,7 +28,12 @@ namespace powdered_networking
                     Console.WriteLine($"Current messageQueue size: {messageQueue.Count}");
                     // Get the stream object for writing data
                     NetworkStream stream = client.GetStream();
-
+                    var handshake = new PlayerConnected(PlayerName);
+                    var msg = MessagePackSerializer.Serialize<INetworkMessage>(handshake);
+                    await stream.WriteAsync(msg);
+                    var confirmation = await ReceiveConfirmationAsync(stream, cancel);
+                    var playerId = confirmation.playerId;
+                    Console.WriteLine($"Player {playerId} connected.");
                     while (!cancel.IsCancellationRequested && !errorThrown)
                     {
                         //Console.WriteLine($"{!cancel.IsCancellationRequested} && ${!errorThrown}");
@@ -51,6 +56,29 @@ namespace powdered_networking
         {
             byte[] data = MessagePackSerializer.Serialize<INetworkMessage>(networkInput);
             await stream.WriteAsync(data, 0, data.Length);
+        }
+        
+        private static async Task<PlayerConnectedConfirmation> ReceiveConfirmationAsync(NetworkStream stream, CancellationToken cancel)
+        {
+            byte[] buffer = new byte[1024];
+
+            try
+            {
+                // Wait to receive data from the server (with cancellation token support)
+                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancel);
+                if (bytesRead > 0)
+                {
+                    // Deserialize the received data as a PlayerConnectionConfirmation
+                    var confirmation = MessagePackSerializer.Deserialize<PlayerConnectedConfirmation>(buffer);
+                    return confirmation;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error receiving confirmation: {ex.Message}");
+            }
+
+            return null;
         }
     }
 }

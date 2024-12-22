@@ -15,6 +15,7 @@ namespace powdered_networking
 
 		public static async Task StartServerAsync()
 		{
+			PlayerManager playerManager = new PlayerManager();
 			Console.WriteLine("Hi there");
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
 
@@ -50,6 +51,12 @@ namespace powdered_networking
 
 							case NetworkEvent networkEvent:
 								Console.WriteLine("Event received!");
+								break;
+							case PlayerConnected playerConnected:
+								NetworkPlayer player = playerManager.NewPlayer(playerConnected.playerName);
+								var confirmation = new PlayerConnectedConfirmation(player.PlayerId);
+								var msg = MessagePackSerializer.Serialize<PlayerConnectedConfirmation>(confirmation);
+								await stream.WriteAsync(msg);
 								break;
 						}
 					}

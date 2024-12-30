@@ -11,6 +11,7 @@ namespace powdered_networking
 {
     public abstract class SocketClient
     {
+        private const bool DEBUG = false;
         private const string ServerIp = "127.0.0.1"; // Localhost
         private const int Port = 5000;
         private const string PlayerName = "Player";
@@ -24,8 +25,12 @@ namespace powdered_networking
                 using (TcpClient client = new TcpClient())
                 {
                     await client.ConnectAsync(ServerIp, Port);
-                    Console.WriteLine("Connected to server.");
-                    Console.WriteLine($"Current messageQueue size: {messageQueue.Count}");
+                    if (DEBUG)
+                    {
+                        Console.WriteLine("Connected to server.");
+                        Console.WriteLine($"Current messageQueue size: {messageQueue.Count}");
+                    }
+
                     // Get the stream object for writing data
                     NetworkStream stream = client.GetStream();
                     var handshake = new PlayerConnected(PlayerName);
@@ -33,14 +38,15 @@ namespace powdered_networking
                     await stream.WriteAsync(msg);
                     var confirmation = await ReceiveConfirmationAsync(stream, cancel);
                     var playerId = confirmation.playerId;
-                    Console.WriteLine($"Player {playerId} connected.");
+                    if (DEBUG) Console.WriteLine($"Player {playerId} connected.");
                     while (!cancel.IsCancellationRequested && !errorThrown)
                     {
                         //Console.WriteLine($"{!cancel.IsCancellationRequested} && ${!errorThrown}");
                         if (messageQueue.TryDequeue(out NetworkInput messageInput))
                         {
-                            Console.WriteLine("Writing from messageQueue.");
+                            if (Server.DEBUG) Console.WriteLine("Writing from messageQueue.");
                             await SendNetworkInput(stream, messageInput);
+                            await ReceiveMessage(stream, cancel);
                         }
                     }
 
@@ -79,6 +85,37 @@ namespace powdered_networking
             }
 
             return null;
+        }
+        
+                private static async Task ReceiveMessage(NetworkStream stream, CancellationToken cancel)
+                {
+                    byte[] buffer = new byte[1024];
+        
+                    try
+                    {
+                        // Wait to receive data from the server (with cancellation token support)
+                        int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancel);
+                        if (bytesRead > 0)
+                        {
+                            // Deserialize the received data as a PlayerConnectionConfirmation
+                            var confirmation = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
+                            ProcessMessageFromServer(confirmation);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error receiving confirmation: {ex.Message}");
+                    }
+                }
+
+        private static void ProcessMessageFromServer(INetworkMessage message) 
+        {
+            switch (message)
+            {
+                case NetworkInstantiate networkInstantiate:
+                    Console.WriteLine("Received an instantiate message from server");
+                    break;
+            }
         }
     }
 }

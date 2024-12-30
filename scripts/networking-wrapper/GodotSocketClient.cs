@@ -28,6 +28,7 @@ public abstract partial class GodotSocketClient : Node
     }
 
     public abstract NetworkInput PollInput();
+    public abstract PackedScene InstantiateNode(string nodeName);
     
     private async void StartSocketClient()
     {
@@ -38,6 +39,6 @@ public abstract partial class GodotSocketClient : Node
     private async void StartServerAsync()
     {
         // Run the server in the background without blocking the main thread
-        await Task.Run(() => Server.StartServerAsync());
+        await Task.Run(() => Server.StartServerAsync(InstantiateNode));
     }
 }

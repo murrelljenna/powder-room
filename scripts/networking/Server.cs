@@ -6,19 +6,20 @@ using System.Text;
 using System.Threading.Tasks;
 using MessagePack;
 using powdered_networking.messages;
+using PowderRoom.scripts.networking_wrapper;
 
 namespace powdered_networking
 {
 	public class Server
 	{
+		public const bool DEBUG = false;
 		private const int Port = 5000;
-
-		public static async Task StartServerAsync()
+		public static async Task StartServerAsync(Func<string, PackedScene> whichNode)
 		{
 			PlayerManager playerManager = new PlayerManager();
-			Console.WriteLine("Hi there");
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
-
+			ServerInstantiator instantiator = new ServerInstantiator();
+			
 			try
 			{
 				server.Start();
@@ -33,7 +34,7 @@ namespace powdered_networking
 					// Get a stream object for reading data
 					NetworkStream stream = client.GetStream();
 					byte[] buffer = new byte[1024];
-                    Console.WriteLine(buffer.Length);
+                    if (DEBUG) Console.WriteLine(buffer.Length);
 					// Read data asynchronously
 
 					while (true)
@@ -41,12 +42,10 @@ namespace powdered_networking
 						int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
 
 						INetworkMessage netObj = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
-						Console.WriteLine("Deserializing message");
+						if (Server.DEBUG) Console.WriteLine("Deserializing message");
 						switch (netObj)
 						{
 							case NetworkInput input:
-								Console.WriteLine("Input received!");
-								Console.WriteLine(input.Sprint);
 								break;
 
 							case NetworkEvent networkEvent:
@@ -57,6 +56,11 @@ namespace powdered_networking
 								var confirmation = new PlayerConnectedConfirmation(player.PlayerId);
 								var msg = MessagePackSerializer.Serialize<PlayerConnectedConfirmation>(confirmation);
 								await stream.WriteAsync(msg);
+								Console.WriteLine("Player connected. Instantiating player");
+								instantiator.Instantiate(whichNode("player"), "player", player.PlayerId, stream);
+								break;
+							case NetworkInstantiate networkInstantiate:
+								instantiator.Instantiate(whichNode(networkInstantiate.objectType), networkInstantiate.objectType, networkInstantiate.owner, stream);
 								break;
 						}
 					}

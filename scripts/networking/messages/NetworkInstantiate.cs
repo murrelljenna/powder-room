@@ -9,10 +9,13 @@ public class NetworkInstantiate : INetworkMessage
     public string objectType {get; set;}
     [Key(1)]
     public string owner {get; set;}
+    [Key(2)]
+    public string objectId {get; set;}
 
-    public NetworkInstantiate(string objectType, string playerId)
+    public NetworkInstantiate(string objectType, string playerId, string objectId)
     {
         this.objectType = objectType;
         this.owner = playerId;
+        this.objectId = objectId;
     }
 }

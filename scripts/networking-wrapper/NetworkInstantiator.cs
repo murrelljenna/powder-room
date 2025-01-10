@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using Godot;
@@ -6,41 +8,46 @@ using powdered_networking.messages;
 
 namespace PowderRoom.scripts.networking_wrapper;
 
-public class ServerInstantiator
+public record QueuedInstantiation(string ownerId, string objectType, string id, int xPos, int yPos, int zPos);
+
+public class NetworkObjectManager
 {
-    public Node TargetParentNode;
-
-    /*public ServerInstantiator(Node node)
-    {
-        this.TargetParentNode = node;
-    }*/
+    public ConcurrentQueue<QueuedInstantiation> instantiateQueue = new ConcurrentQueue<QueuedInstantiation>();
+    private Dictionary<string, List<string>> playerObjects = new Dictionary<string, List<string>>();
     
-    private Dictionary<string, List<Node>> _nodesByPlayer = new Dictionary<string, List<Node>>();
-
-    public void Instantiate(PackedScene scene, string nodeName, string ownerId, NetworkStream stream)
+    public void Instantiate(string objectType, string ownerId, NetworkStream stream)
     {
-        Node node = instantiateLocally(scene);
-        
-        RegisterNodesByPlayer(node, ownerId);
+        var objectId = GenerateObjectId();
+        RegisterNodesByPlayer(objectId, ownerId);
 
-        var instantiate = new NetworkInstantiate(nodeName, ownerId);
+        var instantiate = new NetworkInstantiate(objectType, ownerId, objectId);
         var msg = MessagePackSerializer.Serialize<INetworkMessage>(instantiate);
         stream.Write(msg);
+        
+        instantiateLocally(objectType, objectId, ownerId);
+    }
+    
+    private static string GenerateObjectId()
+    {
+        return Guid.NewGuid().ToString();
     }
 
-    private Node instantiateLocally(PackedScene scene)
+    private void instantiateLocally(string objectType, string objectId, string ownerId)
     {
         
-        Node instantiatedNode = scene.Instantiate();
-        //TargetParentNode.AddChild(instantiatedNode);
-        return instantiatedNode;
+        instantiateQueue.Enqueue(new QueuedInstantiation(ownerId, objectType, objectId, 0, 0, 0));
     }
 
-    private void RegisterNodesByPlayer(Node node, string ownerId)
+    private void RegisterNodesByPlayer(string objectId, string ownerId)
     {
-        var nodes = _nodesByPlayer.GetValueOrDefault(ownerId, new List<Node>());
-        nodes.Add(node);
+        var ids = playerObjects.GetValueOrDefault(ownerId, new List<string>());
+        ids.Add(objectId);
         
-        _nodesByPlayer.Add(ownerId, nodes);
+        playerObjects.Add(ownerId, ids);
+    }
+
+    public NetworkObjectManager(ConcurrentQueue<QueuedInstantiation> instantiateQueue)
+    {
+        this.instantiateQueue = instantiateQueue;
     }
 }

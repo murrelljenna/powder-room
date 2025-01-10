@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -14,11 +15,12 @@ namespace powdered_networking
 	{
 		public const bool DEBUG = false;
 		private const int Port = 5000;
-		public static async Task StartServerAsync(Func<string, PackedScene> whichNode)
+		public static async Task StartServerAsync(Func<string, PackedScene> whichNode, Node bad, ConcurrentQueue<QueuedInstantiation> spawnQueue)
 		{
 			PlayerManager playerManager = new PlayerManager();
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
-			ServerInstantiator instantiator = new ServerInstantiator();
+			NetworkObjectManager objectManager = new NetworkObjectManager(spawnQueue);
+			
 			
 			try
 			{
@@ -57,10 +59,7 @@ namespace powdered_networking
 								var msg = MessagePackSerializer.Serialize<PlayerConnectedConfirmation>(confirmation);
 								await stream.WriteAsync(msg);
 								Console.WriteLine("Player connected. Instantiating player");
-								instantiator.Instantiate(whichNode("player"), "player", player.PlayerId, stream);
-								break;
-							case NetworkInstantiate networkInstantiate:
-								instantiator.Instantiate(whichNode(networkInstantiate.objectType), networkInstantiate.objectType, networkInstantiate.owner, stream);
+								objectManager.Instantiate("player", player.PlayerId, stream);
 								break;
 						}
 					}

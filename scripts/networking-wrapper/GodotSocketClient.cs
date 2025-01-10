@@ -15,9 +15,15 @@ public abstract partial class GodotSocketClient : Node
     
     public override void _Ready()
     {
-        sceneReference = GetTree().Root;
-        StartServerAsync();
-        StartSocketClient();
+        string[] args = OS.GetCmdlineArgs();
+        if (args[0] == "--server")
+        {
+            StartServerAsync();
+        }
+        else
+        {
+            StartSocketClient();
+        }
     }
 
     public override void _Process(double delta)
@@ -39,7 +45,7 @@ public abstract partial class GodotSocketClient : Node
     {
         CancellationTokenSource cts = new CancellationTokenSource();
         // Run the client connection and message sending in the background
-        await Task.Run(() => SocketClient.ConnectAndSendMessageAsync(_inputQueue, cts.Token));
+        await Task.Run(() => SocketClient.ConnectAndSendMessageAsync(_inputQueue, _instantiationQueue, cts.Token));
     }
     private async void StartServerAsync()
     {

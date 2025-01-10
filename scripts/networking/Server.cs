@@ -19,7 +19,7 @@ namespace powdered_networking
 		{
 			PlayerManager playerManager = new PlayerManager();
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
-			NetworkObjectManager objectManager = new NetworkObjectManager(spawnQueue);
+			ServerObjectManager objectManager = new ServerObjectManager(spawnQueue);
 			
 			
 			try

@@ -15,7 +15,7 @@ namespace powdered_networking
 	{
 		public const bool DEBUG = false;
 		private const int Port = 5000;
-		public static async Task StartServerAsync(Func<string, PackedScene> whichNode, Node bad, ConcurrentQueue<QueuedInstantiation> spawnQueue)
+		public static async Task StartServerAsync(ConcurrentQueue<QueuedInstantiation> spawnQueue)
 		{
 			PlayerManager playerManager = new PlayerManager();
 			TcpListener server = new TcpListener(IPAddress.Any, Port);

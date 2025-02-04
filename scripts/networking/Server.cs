@@ -1,9 +1,8 @@
-using Godot;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 using MessagePack;
 using powdered_networking.messages;
@@ -15,13 +14,13 @@ namespace powdered_networking
 	{
 		public const bool DEBUG = false;
 		private const int Port = 5000;
-		public static async Task StartServerAsync(ConcurrentQueue<QueuedInstantiation> spawnQueue)
+		public static async Task StartServerAsync(ConcurrentQueue<QueuedInstantiation> spawnQueue, ConcurrentQueue<List<NetworkObject>> stateQueue)
 		{
 			PlayerManager playerManager = new PlayerManager();
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
 			ServerObjectManager objectManager = new ServerObjectManager(spawnQueue);
-			
-			
+			NetworkObjectPosTracker posTracker = new NetworkObjectPosTracker(stateQueue);
+
 			try
 			{
 				server.Start();
@@ -41,26 +40,32 @@ namespace powdered_networking
 
 					while (true)
 					{
-						int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+						await posTracker.TickPosTracking(stream);
 
-						INetworkMessage netObj = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
-						if (Server.DEBUG) Console.WriteLine("Deserializing message");
-						switch (netObj)
+						if (stream.DataAvailable)
 						{
-							case NetworkInput input:
-								break;
+							int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
 
-							case NetworkEvent networkEvent:
-								Console.WriteLine("Event received!");
-								break;
-							case PlayerConnected playerConnected:
-								NetworkPlayer player = playerManager.NewPlayer(playerConnected.playerName);
-								var confirmation = new PlayerConnectedConfirmation(player.PlayerId);
-								var msg = MessagePackSerializer.Serialize<PlayerConnectedConfirmation>(confirmation);
-								await stream.WriteAsync(msg);
-								Console.WriteLine("Player connected. Instantiating player");
-								objectManager.Instantiate("player", player.PlayerId, stream);
-								break;
+							INetworkMessage netObj = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
+							if (Server.DEBUG) Console.WriteLine("Deserializing message");
+							switch (netObj)
+							{
+								case NetworkInput input:
+									break;
+
+								case NetworkEvent networkEvent:
+									Console.WriteLine("Event received!");
+									break;
+								case PlayerConnected playerConnected:
+									NetworkPlayer player = playerManager.NewPlayer(playerConnected.playerName);
+									var confirmation = new PlayerConnectedConfirmation(player.PlayerId);
+									var msg = MessagePackSerializer
+										.Serialize<PlayerConnectedConfirmation>(confirmation);
+									await stream.WriteAsync(msg);
+									Console.WriteLine("Player connected. Instantiating player");
+									objectManager.Instantiate("player", player.PlayerId, stream);
+									break;
+							}
 						}
 					}
 

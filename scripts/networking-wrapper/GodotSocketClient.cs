@@ -11,12 +11,22 @@ public abstract partial class GodotSocketClient : Node
 {
     private ConcurrentQueue<NetworkInput> _inputQueue = new ConcurrentQueue<NetworkInput>();
     private ConcurrentQueue<QueuedInstantiation> _instantiationQueue = new ConcurrentQueue<QueuedInstantiation>();
+    private ConcurrentQueue<List<NetworkObject>> _networkObjectQueue = new ConcurrentQueue<List<NetworkObject>>();
     public Node sceneReference;
+    private GodotNetworkObjectPosTracker networkObjectTracker;
+
+    private bool isServer()
+    {
+        string[] args = OS.GetCmdlineArgs();
+        return (args[0] == "--server");
+    }
     
     public override void _Ready()
     {
-        string[] args = OS.GetCmdlineArgs();
-        if (args[0] == "--server")
+        networkObjectTracker = new GodotNetworkObjectPosTracker(_networkObjectQueue);
+        
+        
+        if (isServer())
         {
             StartServerAsync();
         }
@@ -28,6 +38,9 @@ public abstract partial class GodotSocketClient : Node
 
     public override void _Process(double delta)
     {
+        if (isServer()) {
+            networkObjectTracker.TickNetworkTransformTracking();
+        }
         QueueInput();
         InstantiateNetworkObjects();
     }
@@ -46,11 +59,13 @@ public abstract partial class GodotSocketClient : Node
         CancellationTokenSource cts = new CancellationTokenSource();
         // Run the client connection and message sending in the background
         await Task.Run(() => SocketClient.ConnectAndSendMessageAsync(_inputQueue, _instantiationQueue, cts.Token));
+        
     }
     private async void StartServerAsync()
     {
+        
         // Run the server in the background without blocking the main thread
-        await Task.Run(() => Server.StartServerAsync(InstantiateNode, sceneReference, _instantiationQueue));
+        await Task.Run(() => Server.StartServerAsync(_instantiationQueue, _networkObjectQueue));
     }
 
     private void InstantiateNetworkObjects()
@@ -63,6 +78,7 @@ public abstract partial class GodotSocketClient : Node
             var position = new Vector3(instantiation.xPos, instantiation.yPos, instantiation.zPos);
             node.SetGlobalPosition(position);
             AddChild(node);
+            networkObjectTracker.RegisterNetworkObject(instantiation.id, instantiation.ownerId, node);
         }
     }
 }

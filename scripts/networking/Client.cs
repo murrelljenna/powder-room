@@ -118,6 +118,9 @@ namespace powdered_networking
                     Console.WriteLine("Received an instantiate message from server");
                     objectManager.Instantiate(networkInstantiate.objectType, networkInstantiate.objectId, networkInstantiate.owner);
                     break;
+                case NetworkState networkState:
+                    Console.WriteLine("Received network state message from server");
+                    break;
             }
         }
     }

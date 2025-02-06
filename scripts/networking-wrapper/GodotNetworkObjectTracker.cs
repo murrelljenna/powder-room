@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Godot;
 using MessagePack;
@@ -20,6 +21,7 @@ public class GodotNetworkObjectPosTracker
     public ConcurrentQueue<List<NetworkObject>> networkObjectsQueue = new ConcurrentQueue<List<NetworkObject>>();
 
     public List<(NetworkObject, Node3D)> networkObjects = new List<(NetworkObject, Node3D)>();
+    private Dictionary<String, Node3D> networkobjectsById = new Dictionary<String, Node3D>();
     public GodotNetworkObjectPosTracker(ConcurrentQueue<List<NetworkObject>> queue)
     {
         networkObjectsQueue = queue;
@@ -30,6 +32,7 @@ public class GodotNetworkObjectPosTracker
         NetworkVector3 pos = new NetworkVector3(node.GlobalPosition.X, node.GlobalPosition.Y, node.GlobalPosition.Z);
         NetworkObject networkObject = new NetworkObject(objectId, ownerId, pos);
         networkObjects.Add((networkObject, node));
+        networkobjectsById.Add(objectId, node);
         Console.WriteLine("Registering new network object of id " + objectId);
     }
 
@@ -48,6 +51,20 @@ public class GodotNetworkObjectPosTracker
                 networkObjectsQueue.Enqueue(updatedObjects);
             }
     }
+
+    public void SyncPos(NetworkObject[] objects)
+    {
+        for (int i = 0; i < objects.Length; i++)
+        {
+            Console.WriteLine("Syncing object: " + objects[i].Id.ToString());
+            var netObj = objects[i];
+            if (networkobjectsById.TryGetValue(netObj.Id, out Node3D node))
+            {
+                Vector3 pos = new Vector3(node.GlobalPosition.X, node.GlobalPosition.Y, node.GlobalPosition.Z);
+                node.GlobalPosition = pos;
+            }
+        }
+    }
 }
 
 public class NetworkObjectPosTracker
@@ -60,17 +77,13 @@ public class NetworkObjectPosTracker
 
     public async Task TickPosTracking(NetworkStream stream)
     {
-        Console.WriteLine("Tick");
-
         if (networkObjectsQueue.TryDequeue(out List<NetworkObject> networkObjects))
         {
             if (networkObjects.Count > 0)
             {
-                
-                Console.WriteLine("Tick - New NetworkState");
                 NetworkState networkState = new NetworkState();
                 networkState.objects = networkObjects.ToArray();
-                var msg = MessagePackSerializer.Serialize<NetworkState>(networkState);
+                var msg = MessagePackSerializer.Serialize<INetworkMessage>(networkState);
                 await stream.WriteAsync(msg);
             }
 

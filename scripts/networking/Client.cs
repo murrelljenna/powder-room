@@ -17,7 +17,7 @@ namespace powdered_networking
         private const int Port = 5000;
         private const string PlayerName = "Player";
 
-        public static async Task ConnectAndSendMessageAsync(ConcurrentQueue<NetworkInput> messageQueue, ConcurrentQueue<QueuedInstantiation> instantiationQueue, CancellationToken cancel)
+        public static async Task ConnectAndSendMessageAsync(ConcurrentQueue<NetworkInput> messageQueue, ConcurrentQueue<QueuedInstantiation> instantiationQueue, ConcurrentQueue<NetworkState> networkStateQueue, CancellationToken cancel)
         {
             ClientObjectManager objectManager = new ClientObjectManager(instantiationQueue);
             bool errorThrown = false;
@@ -48,7 +48,7 @@ namespace powdered_networking
                         {
                             if (Server.DEBUG) Console.WriteLine("Writing from messageQueue.");
                             await SendNetworkInput(stream, messageInput);
-                            await ReceiveMessage(stream, cancel, objectManager);
+                            await ReceiveMessage(stream, cancel, networkStateQueue, objectManager);
                         }
                     }
 
@@ -89,7 +89,7 @@ namespace powdered_networking
             return null;
         }
         
-                private static async Task ReceiveMessage(NetworkStream stream, CancellationToken cancel, ClientObjectManager objectManager)
+                private static async Task ReceiveMessage(NetworkStream stream, CancellationToken cancel, ConcurrentQueue<NetworkState> networkStateQueue, ClientObjectManager objectManager)
                 {
                     byte[] buffer = new byte[1024];
         
@@ -101,7 +101,7 @@ namespace powdered_networking
                         {
                             // Deserialize the received data as a PlayerConnectionConfirmation
                             var confirmation = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
-                            ProcessMessageFromServer(confirmation, objectManager);
+                            ProcessMessageFromServer(confirmation, objectManager, networkStateQueue);
                         }
                     }
                     catch (Exception ex)
@@ -110,7 +110,7 @@ namespace powdered_networking
                     }
                 }
 
-        private static void ProcessMessageFromServer(INetworkMessage message, ClientObjectManager objectManager) 
+        private static void ProcessMessageFromServer(INetworkMessage message, ClientObjectManager objectManager, ConcurrentQueue<NetworkState> networkStateQueue) 
         {
             switch (message)
             {
@@ -119,7 +119,8 @@ namespace powdered_networking
                     objectManager.Instantiate(networkInstantiate.objectType, networkInstantiate.objectId, networkInstantiate.owner);
                     break;
                 case NetworkState networkState:
-                    Console.WriteLine("Received network state message from server");
+                    networkStateQueue.Enqueue(networkState);
+                    //Console.WriteLine("Received network state message from server");
                     break;
             }
         }

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Godot;
 using powdered_networking;
+using powdered_networking.messages;
 using PowderRoom.scripts.networking_wrapper;
 
 public abstract partial class GodotSocketClient : Node
@@ -14,7 +15,7 @@ public abstract partial class GodotSocketClient : Node
     private ConcurrentQueue<List<NetworkObject>> _networkObjectQueue = new ConcurrentQueue<List<NetworkObject>>();
     public Node sceneReference;
     private GodotNetworkObjectPosTracker networkObjectTracker;
-
+    private ConcurrentQueue<NetworkState> networkStateQueue = new ConcurrentQueue<NetworkState>();
     private bool isServer()
     {
         string[] args = OS.GetCmdlineArgs();
@@ -43,6 +44,7 @@ public abstract partial class GodotSocketClient : Node
         }
         QueueInput();
         InstantiateNetworkObjects();
+        TickNetworkState();
     }
 
     private void QueueInput()
@@ -54,11 +56,12 @@ public abstract partial class GodotSocketClient : Node
     public abstract NetworkInput PollInput();
     public abstract PackedScene InstantiateNode(string nodeName);
     
+    
     private async void StartSocketClient()
     {
         CancellationTokenSource cts = new CancellationTokenSource();
         // Run the client connection and message sending in the background
-        await Task.Run(() => SocketClient.ConnectAndSendMessageAsync(_inputQueue, _instantiationQueue, cts.Token));
+        await Task.Run(() => SocketClient.ConnectAndSendMessageAsync(_inputQueue, _instantiationQueue, networkStateQueue, cts.Token));
         
     }
     private async void StartServerAsync()
@@ -80,5 +83,18 @@ public abstract partial class GodotSocketClient : Node
             AddChild(node);
             networkObjectTracker.RegisterNetworkObject(instantiation.id, instantiation.ownerId, node);
         }
+    }
+
+    private void TickNetworkState()
+    {
+        if (networkStateQueue.TryDequeue(out NetworkState networkState))
+        {
+            SyncNetworkState(networkState);
+        }
+    }
+
+    private void SyncNetworkState(NetworkState state)
+    {
+        networkObjectTracker.SyncPos(state.objects);
     }
 }

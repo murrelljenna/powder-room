@@ -20,7 +20,7 @@ namespace powdered_networking
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
 			ServerObjectManager objectManager = new ServerObjectManager(spawnQueue);
 			NetworkObjectPosTracker posTracker = new NetworkObjectPosTracker(stateQueue);
-
+			bool confirmationReceived = false;
 			try
 			{
 				server.Start();
@@ -40,7 +40,10 @@ namespace powdered_networking
 
 					while (true)
 					{
-						await posTracker.TickPosTracking(stream);
+						if (confirmationReceived)
+						{
+							await posTracker.TickPosTracking(stream);
+						}
 
 						if (stream.DataAvailable)
 						{
@@ -63,6 +66,7 @@ namespace powdered_networking
 										.Serialize<PlayerConnectedConfirmation>(confirmation);
 									await stream.WriteAsync(msg);
 									Console.WriteLine("Player connected. Instantiating player");
+									confirmationReceived = true;
 									objectManager.Instantiate("player", player.PlayerId, stream);
 									break;
 							}

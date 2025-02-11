@@ -1,15 +1,15 @@
 [gd_scene load_steps=6 format=3 uid="uid://bkcnqevnhctq0"]
 
-[ext_resource type="Script" path="res://FPSController/character_body_3d.gd" id="1_jcu1t"]
 [ext_resource type="PackedScene" uid="uid://gvm0me264r32" path="res://models/disguise-glasses.glb" id="1_voykq"]
+[ext_resource type="Script" path="res://scripts/CharacterController.cs" id="1_wfeyn"]
 [ext_resource type="PackedScene" uid="uid://c6p8hyjp6algt" path="res://spray_gun.tscn" id="3_y8vdj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qx8tb"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_sn8yd"]
 
-[node name="CharacterBody3D" type="CharacterBody3D"]
-script = ExtResource("1_jcu1t")
+[node name="s" type="CharacterBody3D"]
+script = ExtResource("1_wfeyn")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_qx8tb")

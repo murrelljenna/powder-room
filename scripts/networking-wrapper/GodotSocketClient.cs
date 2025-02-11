@@ -16,6 +16,7 @@ public abstract partial class GodotSocketClient : Node
     public Node sceneReference;
     private GodotNetworkObjectPosTracker networkObjectTracker;
     private ConcurrentQueue<NetworkState> networkStateQueue = new ConcurrentQueue<NetworkState>();
+    private ConcurrentQueue<NetworkInput> serverReceiveInputQueue = new ConcurrentQueue<NetworkInput>();
     private bool isServer()
     {
         string[] args = OS.GetCmdlineArgs();
@@ -47,6 +48,17 @@ public abstract partial class GodotSocketClient : Node
         TickNetworkState();
     }
 
+    public void OnInput(Action<NetworkInput> action)
+    {
+        if (isServer())
+        {
+            if (serverReceiveInputQueue.TryDequeue(out NetworkInput input))
+            {
+                action(input);
+            }
+        }
+    }
+
     private void QueueInput()
     {
         NetworkInput input = PollInput();
@@ -68,7 +80,7 @@ public abstract partial class GodotSocketClient : Node
     {
         
         // Run the server in the background without blocking the main thread
-        await Task.Run(() => Server.StartServerAsync(_instantiationQueue, _networkObjectQueue));
+        await Task.Run(() => Server.StartServerAsync(serverReceiveInputQueue, _instantiationQueue, _networkObjectQueue));
     }
 
     private void InstantiateNetworkObjects()

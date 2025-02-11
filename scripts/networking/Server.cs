@@ -14,7 +14,7 @@ namespace powdered_networking
 	{
 		public const bool DEBUG = false;
 		private const int Port = 5000;
-		public static async Task StartServerAsync(ConcurrentQueue<QueuedInstantiation> spawnQueue, ConcurrentQueue<List<NetworkObject>> stateQueue)
+		public static async Task StartServerAsync(ConcurrentQueue<NetworkInput> inputQueue, ConcurrentQueue<QueuedInstantiation> spawnQueue, ConcurrentQueue<List<NetworkObject>> stateQueue)
 		{
 			PlayerManager playerManager = new PlayerManager();
 			TcpListener server = new TcpListener(IPAddress.Any, Port);
@@ -54,6 +54,7 @@ namespace powdered_networking
 							switch (netObj)
 							{
 								case NetworkInput input:
+									inputQueue.Enqueue(input);
 									break;
 
 								case NetworkEvent networkEvent:

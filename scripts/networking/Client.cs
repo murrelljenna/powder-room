@@ -12,7 +12,7 @@ namespace powdered_networking
 {
     public abstract class SocketClient
     {
-        private const bool DEBUG = false;
+        private const bool DEBUG = true;
         private const string ServerIp = "127.0.0.1"; // Localhost
         private const int Port = 5000;
         private const string PlayerName = "Player";
@@ -43,12 +43,17 @@ namespace powdered_networking
                     if (DEBUG) Console.WriteLine($"Player {playerId} connected.");
                     while (!cancel.IsCancellationRequested && !errorThrown)
                     {
+                        //Console.WriteLine("Checking for new input");
                         //Console.WriteLine($"{!cancel.IsCancellationRequested} && ${!errorThrown}");
                         if (messageQueue.TryDequeue(out NetworkInput messageInput))
                         {
+                            Console.WriteLine("Sending new message.");
                             if (Server.DEBUG) Console.WriteLine("Writing from messageQueue.");
                             await SendNetworkInput(stream, messageInput);
-                            await ReceiveMessage(stream, cancel, networkStateQueue, objectManager);
+                            if (stream.DataAvailable)
+                            {
+                                await ReceiveMessage(stream, cancel, networkStateQueue, objectManager);
+                            }
                         }
                     }
 

@@ -1,8 +1,6 @@
 using MessagePack;
 using powdered_networking.messages;
 
-Net
-
 [MessagePackObject]
 public struct NetworkInput : INetworkMessage
 {
@@ -11,13 +9,14 @@ public struct NetworkInput : INetworkMessage
     public bool Sprint {get; set;}
     [Key(1)]
     public bool Jump {get; set;}
-    public NetworkVector2
-    [Key(6)]
+    [Key(2)]
+    public NetworkVector2 Direction {get; set;}
+    [Key(3)]
     public bool Fire {get; set;}
 
 
     public static NetworkInput Neutral()
     {
-        return new NetworkInput {Forward = false, Sprint = false, Jump = false, Right = false, Left = false, Back = false, Fire = false};
+        return new NetworkInput {Sprint = false, Jump = false, Direction = new NetworkVector2(), Fire = false};
     }
 }

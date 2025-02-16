@@ -10,7 +10,14 @@ public partial class NetworkRunner : GodotSocketClient
 	public PackedScene playerPrefab;
 	public override NetworkInput PollInput()
 	{
+
+		Console.WriteLine("PollInput");
 		NetworkInput input = new NetworkInput();
+
+		if (Input.IsActionJustPressed("jump"))
+		{
+			input.Jump = true;
+		}
 		
 		if (Input.IsActionPressed("ui_up"))
 		{

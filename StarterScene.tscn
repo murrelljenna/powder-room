@@ -492,9 +492,6 @@ path_continuous_u = true
 path_u_distance = 1.0
 path_joined = false
 
-[node name="CharacterBody3D" parent="." instance=ExtResource("7_y8tag")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.97419, 1.06973, -46.6579)
-
 [node name="NetworkRunner" type="Node" parent="."]
 script = ExtResource("1_qo17g")
 playerPrefab = ExtResource("7_y8tag")

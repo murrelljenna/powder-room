@@ -54,6 +54,7 @@ namespace powdered_networking
 							switch (netObj)
 							{
 								case NetworkInput input:
+									Console.WriteLine("Input received");
 									inputQueue.Enqueue(input);
 									break;
 

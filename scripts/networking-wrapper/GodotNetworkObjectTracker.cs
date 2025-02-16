@@ -56,7 +56,7 @@ public class GodotNetworkObjectPosTracker
     {
         for (int i = 0; i < objects.Length; i++)
         {
-            Console.WriteLine("Syncing object: " + objects[i].Id.ToString());
+            //Console.WriteLine("Syncing object: " + objects[i].Id.ToString());
             var netObj = objects[i];
             if (networkobjectsById.TryGetValue(netObj.Id, out Node3D node))
             {

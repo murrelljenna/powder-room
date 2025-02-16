@@ -17,7 +17,7 @@ public abstract partial class GodotSocketClient : Node
     private GodotNetworkObjectPosTracker networkObjectTracker;
     private ConcurrentQueue<NetworkState> networkStateQueue = new ConcurrentQueue<NetworkState>();
     private ConcurrentQueue<NetworkInput> serverReceiveInputQueue = new ConcurrentQueue<NetworkInput>();
-    private bool isServer()
+    protected bool isServer()
     {
         string[] args = OS.GetCmdlineArgs();
         return (args[0] == "--server");
@@ -44,7 +44,12 @@ public abstract partial class GodotSocketClient : Node
             networkObjectTracker.TickNetworkTransformTracking();
             ProcessInputs();
         }
-        QueueInput();
+        else
+        {
+            Console.WriteLine("_Process");
+            QueueInput(); 
+        }
+
         InstantiateNetworkObjects();
         TickNetworkState();
     }
@@ -98,6 +103,11 @@ public abstract partial class GodotSocketClient : Node
             Console.WriteLine($"Instantiating {instantiation.objectType}");
             var scene = InstantiateNode(instantiation.objectType);
             var node = scene.Instantiate<Node3D>();
+            
+            INetworkedObject networkedObject = node as INetworkedObject;
+
+                networkedObject.Initialize(this);
+
             var position = new Vector3(instantiation.xPos, instantiation.yPos, instantiation.zPos);
             node.SetGlobalPosition(position);
             AddChild(node);

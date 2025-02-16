@@ -1,7 +1,13 @@
 using Godot;
 using System;
+using System.Diagnostics;
 
-public partial class CharacterController : CharacterBody3D // Added the partial modifier here
+public interface INetworkedObject
+{
+    public void Initialize(GodotSocketClient runner);
+}
+
+public partial class CharacterController : CharacterBody3D, INetworkedObject // Added the partial modifier here
 {
     [Export] public float LookSensitivity = 0.006f;
     [Export] public float JumpVelocity = 6.0f;
@@ -15,7 +21,8 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
     [Export] public float AirCap = 0.85f;
     [Export] public float AirAccel = 800.0f;
     [Export] public float AirMoveSpeed = 500.0f;
-
+    public GodotSocketClient networkRunner;
+    
     private Vector3 _wishDir = Vector3.Zero;
     
     private NetworkInput input = NetworkInput.Neutral();
@@ -36,8 +43,6 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
                 visualInstance.SetLayerMaskValue(2, true);
             }
         }
-        
-        
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -69,6 +74,7 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
 
     public void HandleInputs(NetworkInput _input)
     {
+        Console.WriteLine("_input:" + _input.Jump);
         input = _input;
     }
 
@@ -80,10 +86,12 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
         // Replaced Xform() with Basis * Vector3 multiplication
         _wishDir = GlobalTransform.Basis * new Vector3(-inputDir.X, 0.0f, -inputDir.Y);
 
+        //Console.WriteLine(input.Jump);
         if (IsOnFloor())
         {
             if (input.Jump)
             {
+                Console.WriteLine("Jump");
                 Velocity = new Vector3(Velocity.X, JumpVelocity, Velocity.Z);
             }
             HandleGroundPhysics(deltaTime);
@@ -138,5 +146,11 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
     public override void _Process(double delta)
     {
         // Placeholder for any update logic if needed.
+    }
+
+    public void Initialize(GodotSocketClient runner)
+    {
+        networkRunner = runner;
+        networkRunner.OnInput(HandleInputs);
     }
 }

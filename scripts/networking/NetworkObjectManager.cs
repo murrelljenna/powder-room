@@ -55,7 +55,6 @@ public class ServerObjectManager
 public class ClientObjectManager
 {
     public ConcurrentQueue<QueuedInstantiation> instantiateQueue = new ConcurrentQueue<QueuedInstantiation>();
-    
     public void Instantiate(string objectType, string objectId, string ownerId)
     {
         instantiateLocally(objectType, objectId, ownerId);

@@ -12,7 +12,7 @@ public class NetworkVector3
     [Key(2)]
     public float zPos {get; set;}
 
-    public NetworkVector3(float xPos, float yPos, float zPos)
+    public NetworkVector3(float xPos = 0f, float yPos = 0f, float zPos = 0f)
     {
         this.xPos = xPos;
         this.yPos = yPos;

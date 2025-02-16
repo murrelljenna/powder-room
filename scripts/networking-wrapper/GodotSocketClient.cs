@@ -42,21 +42,29 @@ public abstract partial class GodotSocketClient : Node
     {
         if (isServer()) {
             networkObjectTracker.TickNetworkTransformTracking();
+            ProcessInputs();
         }
         QueueInput();
         InstantiateNetworkObjects();
         TickNetworkState();
     }
 
-    public void OnInput(Action<NetworkInput> action)
+    private List<Action<NetworkInput>> actions = new List<Action<NetworkInput>>();
+    
+    private void ProcessInputs()
     {
         if (isServer())
         {
             if (serverReceiveInputQueue.TryDequeue(out NetworkInput input))
             {
-                action(input);
+                actions.ForEach(a => a(input));
             }
         }
+    }
+
+    public void OnInput(Action<NetworkInput> action)
+    {
+        actions.Add(action);
     }
 
     private void QueueInput()

@@ -17,6 +17,8 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
     [Export] public float AirMoveSpeed = 500.0f;
 
     private Vector3 _wishDir = Vector3.Zero;
+    
+    private NetworkInput input = NetworkInput.Neutral();
 
     private float GetMoveSpeed()
     {
@@ -34,6 +36,8 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
                 visualInstance.SetLayerMaskValue(2, true);
             }
         }
+        
+        
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -63,6 +67,11 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
         }
     }
 
+    public void HandleInputs(NetworkInput _input)
+    {
+        input = _input;
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         float deltaTime = (float)delta; // Convert to float since PhysicsProcess takes double
@@ -73,7 +82,7 @@ public partial class CharacterController : CharacterBody3D // Added the partial 
 
         if (IsOnFloor())
         {
-            if (Input.IsActionJustPressed("jump"))
+            if (input.Jump)
             {
                 Velocity = new Vector3(Velocity.X, JumpVelocity, Velocity.Z);
             }

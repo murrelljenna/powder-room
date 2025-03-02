@@ -70,12 +70,14 @@ public class GodotNetworkObjectPosTracker
 public class NetworkObjectPosTracker
 {
     public ConcurrentQueue<List<NetworkObject>> networkObjectsQueue = new ConcurrentQueue<List<NetworkObject>>();
-    public NetworkObjectPosTracker(ConcurrentQueue<List<NetworkObject>> queue)
+    private PlayerManager playerManager;
+    public NetworkObjectPosTracker(ConcurrentQueue<List<NetworkObject>> queue, PlayerManager _playerManager)
     {
         networkObjectsQueue = queue;
+        playerManager = _playerManager;
     }
 
-    public async Task TickPosTracking(NetworkStream stream)
+    public void TickPosTracking(UdpClient server)
     {
         if (networkObjectsQueue.TryDequeue(out List<NetworkObject> networkObjects))
         {
@@ -84,7 +86,11 @@ public class NetworkObjectPosTracker
                 NetworkState networkState = new NetworkState();
                 networkState.objects = networkObjects.ToArray();
                 var msg = MessagePackSerializer.Serialize<INetworkMessage>(networkState);
-                await stream.WriteAsync(msg);
+                foreach (var player in playerManager.players)
+                {
+                    server.Send(msg, player.remote);
+                }
+                
             }
 
         }

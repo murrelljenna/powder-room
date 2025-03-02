@@ -24,9 +24,9 @@ namespace powdered_networking
             try
             {
                 // Connect to the server asynchronously
-                using (TcpClient client = new TcpClient())
+                using (UdpClient client = new UdpClient())
                 {
-                    await client.ConnectAsync(ServerIp, Port);
+                    client.Connect(ServerIp, Port);
                     if (DEBUG)
                     {
                         Console.WriteLine("Connected to server.");
@@ -34,11 +34,10 @@ namespace powdered_networking
                     }
 
                     // Get the stream object for writing data
-                    NetworkStream stream = client.GetStream();
                     var handshake = new PlayerConnected(PlayerName);
                     var msg = MessagePackSerializer.Serialize<INetworkMessage>(handshake);
-                    await stream.WriteAsync(msg);
-                    var confirmation = await ReceiveConfirmationAsync(stream, cancel);
+                    client.Send(msg);
+                    var confirmation = await ReceiveConfirmationAsync(client, cancel);
                     var playerId = confirmation.playerId;
                     if (DEBUG) Console.WriteLine($"Player {playerId} connected.");
                     while (!cancel.IsCancellationRequested && !errorThrown)
@@ -49,10 +48,10 @@ namespace powdered_networking
                         {
                             Console.WriteLine("Sending new message.");
                             if (Server.DEBUG) Console.WriteLine("Writing from messageQueue.");
-                            await SendNetworkInput(stream, messageInput);
-                            if (stream.DataAvailable)
+                            SendNetworkInput(client, messageInput);
+                            if (client.Available > 0)
                             {
-                                await ReceiveMessage(stream, cancel, networkStateQueue, objectManager);
+                                await ReceiveMessage(client, cancel, networkStateQueue, objectManager);
                             }
                         }
                     }
@@ -65,26 +64,21 @@ namespace powdered_networking
                 errorThrown = true;
             }
         }
-        private static async Task SendNetworkInput(NetworkStream stream, NetworkInput networkInput)
+        private static void SendNetworkInput(UdpClient client, NetworkInput networkInput)
         {
             byte[] data = MessagePackSerializer.Serialize<INetworkMessage>(networkInput);
-            await stream.WriteAsync(data, 0, data.Length);
+            client.Send(data);
         }
         
-        private static async Task<PlayerConnectedConfirmation> ReceiveConfirmationAsync(NetworkStream stream, CancellationToken cancel)
+        private static async Task<PlayerConnectedConfirmation> ReceiveConfirmationAsync(UdpClient client, CancellationToken cancel)
         {
             byte[] buffer = new byte[1024];
 
             try
             {
-                // Wait to receive data from the server (with cancellation token support)
-                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancel);
-                if (bytesRead > 0)
-                {
-                    // Deserialize the received data as a PlayerConnectionConfirmation
-                    var confirmation = MessagePackSerializer.Deserialize<PlayerConnectedConfirmation>(buffer);
-                    return confirmation;
-                }
+                UdpReceiveResult result = await client.ReceiveAsync();
+                var confirmation = MessagePackSerializer.Deserialize<PlayerConnectedConfirmation>(result.Buffer);
+                return confirmation;
             }
             catch (Exception ex)
             {
@@ -94,18 +88,19 @@ namespace powdered_networking
             return null;
         }
         
-                private static async Task ReceiveMessage(NetworkStream stream, CancellationToken cancel, ConcurrentQueue<NetworkState> networkStateQueue, ClientObjectManager objectManager)
+                private static async Task ReceiveMessage(UdpClient client, CancellationToken cancel, ConcurrentQueue<NetworkState> networkStateQueue, ClientObjectManager objectManager)
                 {
                     byte[] buffer = new byte[1024];
         
                     try
                     {
-                        // Wait to receive data from the server (with cancellation token support)
-                        int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancel);
-                        if (bytesRead > 0)
+                        if (client.Available > 0)
                         {
+                        // Wait to receive data from the server (with cancellation token support)
+                        UdpReceiveResult result = await client.ReceiveAsync();
+
                             // Deserialize the received data as a PlayerConnectionConfirmation
-                            var confirmation = MessagePackSerializer.Deserialize<INetworkMessage>(buffer);
+                            var confirmation = MessagePackSerializer.Deserialize<INetworkMessage>(result.Buffer);
                             ProcessMessageFromServer(confirmation, objectManager, networkStateQueue);
                         }
                     }

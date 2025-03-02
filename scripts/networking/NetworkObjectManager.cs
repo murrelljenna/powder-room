@@ -14,15 +14,20 @@ public class ServerObjectManager
 {
     public ConcurrentQueue<QueuedInstantiation> instantiateQueue = new ConcurrentQueue<QueuedInstantiation>();
     private Dictionary<string, List<string>> playerObjects = new Dictionary<string, List<string>>();
+    private PlayerManager players; 
     
-    public void Instantiate(string objectType, string ownerId, NetworkStream stream)
+    public void Instantiate(string objectType, string ownerId, UdpClient stream)
     {
         var objectId = GenerateObjectId();
         RegisterNodesByPlayer(objectId, ownerId);
 
         var instantiate = new NetworkInstantiate(objectType, ownerId, objectId);
         var msg = MessagePackSerializer.Serialize<INetworkMessage>(instantiate);
-        stream.Write(msg);
+        
+        foreach (var player in players.players)
+        {
+            stream.Send(msg, player.remote);
+        }
         
         instantiateLocally(objectType, objectId, ownerId);
     }
@@ -46,9 +51,10 @@ public class ServerObjectManager
         playerObjects.Add(ownerId, ids);
     }
 
-    public ServerObjectManager(ConcurrentQueue<QueuedInstantiation> instantiateQueue)
+    public ServerObjectManager(ConcurrentQueue<QueuedInstantiation> instantiateQueue, PlayerManager players)
     {
         this.instantiateQueue = instantiateQueue;
+        this.players = players;
     }
 }
 
